@@ -207,6 +207,17 @@
             margin: 10px auto 15px auto;
             width: 70%;
         }
+
+        .delete-btn {
+            background: rgba(255, 0, 0, 0.25);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            color: #ffdddd;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 0, 0, 0.4);
+            transform: scale(1.05);
+        }
     </style>
 </head>
 
@@ -306,7 +317,7 @@
 
             document.getElementById("note").value = ""
 
-            showToast()
+            showToast("Nota berjaya disimpan")
 
             loadNotes()
 

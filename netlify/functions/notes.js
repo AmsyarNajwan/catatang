@@ -27,4 +27,20 @@ export async function handler(event) {
             body: JSON.stringify({ success: true })
         };
     }
+
+    if (event.httpMethod === "DELETE") {
+
+        const data = JSON.parse(event.body)
+
+        await sql`
+    DELETE FROM notes
+    WHERE id = ${data.id}
+  `
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ success: true })
+        }
+    }
+
 }
