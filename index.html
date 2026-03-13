@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Catatang</title>
+    <link rel="icon" type="image/png" href="icon.png">
 
     <style>
         :root {
@@ -126,6 +127,13 @@
             animation: spring .5s cubic-bezier(.34, 1.56, .64, 1);
         }
 
+        li button {
+            margin-top: 8px;
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+
+
         .noteText {
             color: white;
             font-size: 15px;
@@ -230,9 +238,11 @@
 
     <script>
 
-        function showToast() {
+        function showToast(msg) {
 
             const toast = document.getElementById("toast")
+
+            toast.textContent = msg
 
             toast.classList.add("show")
 
@@ -241,6 +251,7 @@
             }, 2000)
 
         }
+
 
         function masaSekarang() {
 
@@ -268,7 +279,9 @@
                 li.innerHTML = `
 <div class="noteText">${n.content}</div>
 <div class="time">Ditambah pada ${masaSekarang()}</div>
+<button onclick="deleteNote(${n.id})">🗑 Buang</button>
 `
+
 
                 list.appendChild(li)
 
@@ -280,7 +293,11 @@
 
             const content = document.getElementById("note").value
 
-            if (!content) return
+            if (!content) {
+                showToast("Nota tidak boleh kosong")
+                return
+            }
+
 
             await fetch("/.netlify/functions/notes", {
                 method: "POST",
@@ -297,6 +314,19 @@
 
         function toggleDark() {
             document.body.classList.toggle("dark")
+        }
+
+        async function deleteNote(id) {
+
+            await fetch("/.netlify/functions/notes", {
+                method: "DELETE",
+                body: JSON.stringify({ id })
+            })
+
+            showToast("Nota dibuang")
+
+            loadNotes()
+
         }
 
         loadNotes()
