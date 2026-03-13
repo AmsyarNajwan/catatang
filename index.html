@@ -1,36 +1,309 @@
-<h1>Notes App</h1>
+<!DOCTYPE html>
+<html lang="ms">
 
-<input id="note" placeholder="Tulis nota">
-<button onclick="addNote()">Add</button>
+<head>
+    <meta charset="UTF-8">
+    <title>Catatang</title>
 
-<ul id="list"></ul>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --border: rgba(255, 255, 255, 0.25);
+            --text: white;
+        }
 
-<script>
-    async function loadNotes() {
-        const res = await fetch("/.netlify/functions/notes");
-        const notes = await res.json();
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        }
 
-        const list = document.getElementById("list");
-        list.innerHTML = "";
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-        notes.forEach(n => {
-            const li = document.createElement("li");
-            li.textContent = n.content;
-            list.appendChild(li);
-        });
-    }
+            background: linear-gradient(135deg, #6ea8ff, #a37bff, #ff7ec7);
+            background-size: 400% 400%;
+            animation: bgmove 14s ease infinite;
+        }
 
-    async function addNote() {
+        @keyframes bgmove {
+            0% {
+                background-position: 0% 50%
+            }
 
-        const content = document.getElementById("note").value;
+            50% {
+                background-position: 100% 50%
+            }
 
-        await fetch("/.netlify/functions/notes", {
-            method: "POST",
-            body: JSON.stringify({ content })
-        });
+            100% {
+                background-position: 0% 50%
+            }
+        }
 
-        loadNotes();
-    }
+        .card {
 
-    loadNotes();
-</script>
+            width: 420px;
+            padding: 30px;
+
+            border-radius: 26px;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .desc {
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 14px;
+            border: none;
+            outline: none;
+
+            background: var(--glass);
+            border: 1px solid var(--border);
+
+            color: var(--text);
+        }
+
+        button {
+
+            background: var(--glass);
+            border: 1px solid var(--border);
+
+            padding: 12px 16px;
+            border-radius: 14px;
+
+            color: var(--text);
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        button:hover {
+            transform: scale(1.08);
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        li {
+
+            background: var(--glass);
+            border: 1px solid var(--border);
+
+            padding: 12px;
+            border-radius: 14px;
+
+            margin-bottom: 10px;
+
+            animation: spring .5s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        .noteText {
+            color: white;
+            font-size: 15px;
+        }
+
+        .time {
+            font-size: 12px;
+            opacity: .7;
+            margin-top: 5px;
+            color: white;
+        }
+
+        @keyframes spring {
+            0% {
+                transform: scale(.6);
+                opacity: 0
+            }
+
+            60% {
+                transform: scale(1.1)
+            }
+
+            100% {
+                transform: scale(1)
+            }
+        }
+
+        /* Toast */
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+
+            padding: 12px 18px;
+            border-radius: 12px;
+
+            opacity: 0;
+            pointer-events: none;
+
+            transition: opacity .3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #0f0f0f, #1a1a1a, #222);
+        }
+
+        body.dark .card {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark input {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark li {
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        .toggle {
+            display: block;
+            margin: 10px auto 15px auto;
+            width: 70%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+
+        <h1>Catatang</h1>
+
+        <div class="desc">
+            Nota untuk semua orang
+        </div>
+
+        <button class="toggle" onclick="toggleDark()">Tukar Mod Gelap</button>
+
+
+        <div class="input-group">
+            <input id="note" placeholder="Tulis nota...">
+            <button onclick="addNote()">Tambah</button>
+        </div>
+
+        <ul id="list"></ul>
+
+    </div>
+
+    <div id="toast" class="toast">
+        Nota berjaya disimpan
+    </div>
+
+    <script>
+
+        function showToast() {
+
+            const toast = document.getElementById("toast")
+
+            toast.classList.add("show")
+
+            setTimeout(() => {
+                toast.classList.remove("show")
+            }, 2000)
+
+        }
+
+        function masaSekarang() {
+
+            const now = new Date()
+
+            return now.toLocaleTimeString("ms-MY", {
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+
+        }
+
+        async function loadNotes() {
+
+            const res = await fetch("/.netlify/functions/notes")
+            const notes = await res.json()
+
+            const list = document.getElementById("list")
+            list.innerHTML = ""
+
+            notes.forEach(n => {
+
+                const li = document.createElement("li")
+
+                li.innerHTML = `
+<div class="noteText">${n.content}</div>
+<div class="time">Ditambah pada ${masaSekarang()}</div>
+`
+
+                list.appendChild(li)
+
+            })
+
+        }
+
+        async function addNote() {
+
+            const content = document.getElementById("note").value
+
+            if (!content) return
+
+            await fetch("/.netlify/functions/notes", {
+                method: "POST",
+                body: JSON.stringify({ content })
+            })
+
+            document.getElementById("note").value = ""
+
+            showToast()
+
+            loadNotes()
+
+        }
+
+        function toggleDark() {
+            document.body.classList.toggle("dark")
+        }
+
+        loadNotes()
+
+
+    </script>
+
+</body>
+
+</html>
